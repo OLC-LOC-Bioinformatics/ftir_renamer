@@ -35,7 +35,7 @@ The absolute path of the folder to store the renamed files
 
 ### Running 
 
-#####Example command to run the script
+##### Example command to run the script
 
 `renamer.py /nas0/bio_requests/8782 -f FTIR.xlsx -s /nas0/bio_requests/8782/files`
     
@@ -44,7 +44,7 @@ The absolute path of the folder to store the renamed files
     - spreadsheet of FTIR metadata: FTIR.xlsx
     - output folder in which renamed files are stored: /nas0/bio_requests/8782/files
     
-#####Usage
+##### Usage
 
 ```
 usage: renamer.py [-h] -s SEQUENCEPATH -f FILENAME [-o OUTPUTPATH] path
