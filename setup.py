@@ -13,5 +13,6 @@ setup(
     description='File renamer for FTIR files',
     url='https://github.com/adamkoziol/ftir_renamer.git',
     long_description=open('README.md').read(),
-    install_requires=['pandas'],
+    install_requires=['pandas',
+                      'xlrd'],
 )

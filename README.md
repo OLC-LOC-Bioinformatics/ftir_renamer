@@ -14,6 +14,8 @@ From the command line in the folder in which you would like to install the progr
 
 `python setup.py install`
 
+Note: this final command may need to be run with sudo 
+
 Ideally add renamer.py to your path. If you don't know how, that's fine. Just run the merger.py script from within 
 the ftir_renamer folder
 
