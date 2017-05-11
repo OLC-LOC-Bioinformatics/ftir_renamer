@@ -109,7 +109,7 @@ class Renamer(object):
         assert os.path.isfile(self.file), u'Cannot find the supplied Excel file ({0!r:s}) with the file information. ' \
                                           u'Please ensure that this file is in the path, and there\'s no spelling ' \
                                           u'mistakes'.format(self.file)
-        #
+        # If the output path is not provided, use self.path/renamedfiles as the path
         try:
             self.outputpath = os.path.join(args.outputpath, '')
 
