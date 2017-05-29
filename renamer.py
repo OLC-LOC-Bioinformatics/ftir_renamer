@@ -59,12 +59,13 @@ class Renamer(object):
         # Create the output path as required
         make_path(self.outputpath)
         for sample in self.metadata:
-            # Use the FTIR id from the spreadsheet as part of the pattern to match to find the appropriate files
-            # e.g. FTIR0018 will match self.sequencepath/FTIR0018.xxx
+            # Use the FTIR id and replicate from the spreadsheet as part of the pattern to match to find the
+            # appropriate files e.g. FTIR0018 replicate 3 will match self.sequencepath/FTIR0018-3****.xxx
             try:
-                sample.originalfile = glob(os.path.join(self.sequencepath, sample.ftirid + '*'))[0]
+                sample.originalfile = glob(os.path.join(self.sequencepath,
+                                                        ('{}-{}*'.format(sample.ftirid, sample.replicate))))[0]
                 # Rename the file using values from the spreadsheet
-                # Original File Name: FTIR0001.xxx
+                # Original File Name: FTIR0001-1****.xxx
                 # New File Name: GN_Escherichia_coli_BHI_AE_CFIA_FTIR0001_C2_2017_April_13_01.xxx
                 sample.renamedfile = '{}{}'.format('_'.join([sample.gramstain,
                                                              sample.genus,
