@@ -14,9 +14,9 @@ class Renamer(object):
         # A dictionary to store the parsed excel file in a more readable format
         nesteddictionary = dict()
         # Use pandas to read in the excel file, and subsequently convert the pandas data frame to a dictionary
-        # (.to_dict()). Only read the first twelve columns (parse_cols=range(12)), as later columns are not
+        # (.to_dict()). Only read the first fourteen columns (parse_cols=range(14)), as later columns are not
         # relevant to this script
-        dictionary = pandas.read_excel(self.file, parse_cols=range(12)).to_dict()
+        dictionary = pandas.read_excel(self.file, parse_cols=range(14)).to_dict()
         # Iterate through the dictionary - each header from the excel file
         for header in dictionary:
             # Sample is the primary key, and value is the value of the cell for that primary key + header combination
@@ -60,30 +60,32 @@ class Renamer(object):
         make_path(self.outputpath)
         for sample in self.metadata:
             # Use the FTIR id and replicate from the spreadsheet as part of the pattern to match to find the
-            # appropriate files e.g. FTIR0018 replicate 3 will match self.sequencepath/FTIR0018-3****.xxx
+            # appropriate files e.g. FTIR0018 replicate 3 will match self.sequencepath/FTIR0018-3*
             try:
                 sample.originalfile = glob(os.path.join(self.sequencepath,
                                                         ('{}-{}*'.format(sample.ftirid, sample.replicate))))[0]
+                sample.datetime = os.path.basename(sample.originalfile).split('_')[1]
                 # Rename the file using values from the spreadsheet
-                # Original File Name: FTIR0001-1****.xxx
-                # New File Name: GN_Escherichia_coli_BHI_AE_CFIA_FTIR0001_C2_2017_April_13_01.xxx
-                sample.renamedfile = '{}{}'.format('_'.join([sample.gramstain,
-                                                             sample.genus,
-                                                             sample.species,
-                                                             sample.media,
-                                                             sample.respiration,
-                                                             sample.location,
-                                                             sample.ftirid,
-                                                             sample.machine,
-                                                             sample.yyyy,
-                                                             sample.mmm,
-                                                             sample.dd,
-                                                             '{:02d}'.format(int(sample.replicate))
-                                                             ]),
-                                                   os.path.splitext(sample.originalfile)[1])
+                # Original File Name: FTIR0182-1_2017-05-26T11-13-47.spc
+                # New File Name: GN_Klebsiella_BHI_AN_CFIA_FTIR0182_C2_2017_May_26_CA01_OLC0027_2017-05-26T11-13-47.spc
+                sample.renamedfile = '{}'.format('_'.join([sample.gramstain,
+                                                           sample.genus,
+                                                           sample.species,
+                                                           sample.media,
+                                                           sample.respiration,
+                                                           sample.location,
+                                                           sample.ftirid,
+                                                           sample.machine,
+                                                           sample.yyyy,
+                                                           sample.mmm,
+                                                           sample.dd,
+                                                           '{}{:02d}'.format(sample.user, int(sample.replicate)),
+                                                           sample.strainid,
+                                                           sample.datetime
+                                                           ]))
                 # If the species is not provided, remove the 'nan' placeholder used e.g.
-                # GP_Bacillus_nan_TSB_AE_CFIA_FTIR0010_C2_2017_April_20_01.xxx becomes
-                # GP_Bacillus_TSB_AE_CFIA_FTIR0010_C2_2017_April_20_01.xxx
+                # GP_Bacillus_nan_TSB_AE_CFIA_FTIR0010_C2_2017_April_20_01.spc becomes
+                # GP_Bacillus_TSB_AE_CFIA_FTIR0010_C2_2017_April_20_01.spc
                 if sample.species == 'nan':
                     sample.renamedfile = sample.renamedfile.replace('nan_', '')
                 # The output file will be the the renamed file in the output path
@@ -116,7 +118,7 @@ class Renamer(object):
 
         except AttributeError:
             self.outputpath = os.path.join(self.path, 'renamedfiles', '')
-        # Create class variables
+        # Create class variable
         self.metadata = list()
         # Parse the excel sheet
         self.excelparse()
