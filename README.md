@@ -8,7 +8,7 @@ Renames files from the FTIR based on strict naming scheme
 
 From the command line in the folder in which you would like to install the program:
 
-`git clone https://github.com/adamkoziol/ftir_renamer.git --recursive`
+`git clone https://github.com/adamkoziol/ftir_renamer.git`
 
 `cd ftir_renamer`
 
