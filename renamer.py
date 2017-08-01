@@ -1,7 +1,7 @@
 #!/usr/bin/env python
 import time
 import pandas
-from accessoryfunctions.accessoryFunctions import *
+from accessoryFunctions.accessoryFunctions import *
 __author__ = 'adamkoziol'
 
 
@@ -95,7 +95,7 @@ class Renamer(object):
                     shutil.copyfile(sample.originalfile, sample.outputfile)
             # Print a message warning that certain files specified in the spreadsheet were not found in the file path
             except IndexError:
-                printtime('Missing file for {}'.format(sample.ftirid), self.start, '\033[93m')
+                printtime('Missing file for {}'.format(sample.ftirid), self.start)
 
     def __init__(self, args):
         """
