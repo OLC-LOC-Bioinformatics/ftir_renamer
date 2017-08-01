@@ -14,5 +14,6 @@ setup(
     url='https://github.com/adamkoziol/ftir_renamer.git',
     long_description=open('README.md').read(),
     install_requires=['pandas',
+                      'OLCTools',
                       'xlrd'],
 )
