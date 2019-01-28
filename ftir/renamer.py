@@ -60,8 +60,6 @@ class Renamer(object):
         """
         Match the files to the spreadsheet. Rename and copy the files as required.
         """
-        # Create the output path as required
-        make_path(self.outputpath)
         logging.info('Renaming files')
         for sample in self.metadata:
             # Use the FTIR id and replicate from the spreadsheet as part of the pattern to match to find the
@@ -109,22 +107,18 @@ class Renamer(object):
         """
         SetupLogging()
         # Define variables based on supplied arguments
-        self.path = os.path.join(args.path)
-        assert os.path.isdir(self.path), 'Supplied path is not a valid directory {0!r:s}'.format(self.path)
         self.sequencepath = os.path.join(args.sequencepath)
         assert os.path.isdir(self.sequencepath), 'Supplied sequence path is not a valid directory {0!r:s}'\
             .format(self.sequencepath)
-        self.file = os.path.join(self.path, args.filename)
+        self.file = os.path.join(args.filename)
         self.start = args.start
         assert os.path.isfile(self.file), 'Cannot find the supplied Excel file ({0!r:s}) with the file information. ' \
                                           'Please ensure that this file is in the path, and there\'s no spelling ' \
                                           'mistakes'.format(self.file)
-        # If the output path is not provided, use self.path/renamedfiles as the path
-        try:
-            self.outputpath = os.path.join(args.outputpath, '')
-
-        except AttributeError:
-            self.outputpath = os.path.join(self.path, 'renamedfiles')
+        # Set the output path
+        self.outputpath = os.path.join(args.outputpath)
+        # Create the output path as required
+        make_path(self.outputpath)
         # Create class variable
         self.metadata = list()
 

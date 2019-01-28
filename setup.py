@@ -5,7 +5,7 @@ __author__ = 'adamkoziol'
 
 setup(
     name="ftir_renamer",
-    version="0.1",
+    version="0.2",
     packages=find_packages(),
     scripts=[os.path.join('ftir', 'renamer.py')],
     include_package_data=True,
