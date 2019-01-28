@@ -90,7 +90,6 @@ class Renamer(object):
                 # GP_Bacillus_nan_TSB_AE_CFIA_FTIR0010_C2_2017_April_20_01.spc becomes
                 # GP_Bacillus_TSB_AE_CFIA_FTIR0010_C2_2017_April_20_01.spc
                 if sample.species == 'nan':
-                    logging.critical((sample.ftirid, sample.species))
                     sample.renamedfile = sample.renamedfile.replace('nan_', '')
                 # The output file will be the the renamed file in the output path
                 sample.outputfile = os.path.join(self.outputpath, sample.renamedfile)
