@@ -5,3 +5,6 @@
 # Edited text files #
 #####################
 *~
+
+# Python egg files
+*.egg-info

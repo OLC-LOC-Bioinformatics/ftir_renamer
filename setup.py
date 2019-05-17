@@ -5,9 +5,10 @@ __author__ = 'adamkoziol'
 
 setup(
     name="ftir_renamer",
-    version="0.3",
+    version="0.4",
     packages=find_packages(),
-    scripts=[os.path.join('ftir', 'renamer.py')],
+    scripts=[os.path.join('ftir', 'renamer.py'),
+             os.path.join('ftir', 'ftir_rename')],
     include_package_data=True,
     license='MIT',
     author='Adam Koziol',

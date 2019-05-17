@@ -12,17 +12,41 @@ From the command line in the folder in which you would like to install the progr
 
 ### Requirements
 - Unix-like environment
-- Spreadsheet of FTIR-related metadata
-- The .FTIR output files corresponding to the FTIR IDs in the spreadsheet
+- Spreadsheet of FTIR-related metadata (with .XLSX extension)
+- The .spc output files corresponding to the FTIR IDs in the spreadsheet
+
+
+## ftir_rename
+
+Shell script automating the renaming of files from a USB stick
+
+### Required Argument
+
+```
+-f
+The absolute path to the folder containing the .spc files
+```
+
+### Running
+
+##### Example command to run the script
+
+`ftir_rename -f /path/to/FTIR_files`
+
+## renamer.py
+
+Python script that renames .spc files
 
 ### Required Arguments
 
+```
 -s
 The path of the folder containing the FTIR output files
 -f 
 Absolute path to the spreadsheet containing the FTIR metadata
 -o
 The absolute path of the folder to store the renamed files
+```
 
 ### Running 
 
@@ -43,11 +67,10 @@ required arguments:
                         Path of .spc files to process.
   -f FILENAME, --filename FILENAME
                         Name of .xls(x) file with renaming information. Must
-                        conform to agreed upon format (see README for
-                        additional information). This file must be in the
-                        path.
+                        conform to agreed upon format. This file must be in the
+                        supplied sequencepath.
   -o OUTPUTPATH, --outputpath OUTPUTPATH
                         Optionally specify the folder in which the renamed
-                        files are to be stored. Provide thefull path e.g.
+                        files are to be stored. Provide the full path e.g.
                         /path/to/output/files
 ```

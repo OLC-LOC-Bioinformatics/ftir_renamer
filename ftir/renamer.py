@@ -1,4 +1,4 @@
-#!/usr/bin/env python
+#!/usr/bin/python3
 from accessoryFunctions.accessoryFunctions import make_path, MetadataObject, SetupLogging
 from argparse import ArgumentParser
 from glob import glob
@@ -134,7 +134,7 @@ if __name__ == '__main__':
                              '(see README for additional information)')
     parser.add_argument('-o', '--outputpath',
                         required=True,
-                        help='Specify the folder in which the renamed files are to be stored. Provide the'
+                        help='Specify the folder in which the renamed files are to be stored. Provide the '
                              'full path e.g. /path/to/output/files')
     # Get the arguments into an object
     arguments = parser.parse_args()
@@ -145,5 +145,5 @@ if __name__ == '__main__':
     renamer = Renamer(arguments)
     renamer.excelparse()
 
-    # Print a bold, green exit statement
-    print('\033[92m' + '\033[1m' + "\nElapsed Time: %0.2f seconds" % (time.time() - arguments.start) + '\033[0m')
+    # Print a bold, blue exit statement
+    logging.info('Analyses complete!')
