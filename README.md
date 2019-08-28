@@ -10,6 +10,10 @@ From the command line in the folder in which you would like to install the progr
 
 `pip install ftir_renamer`
 
+### Upgrade
+
+`pip install --upgrade ftir_renamer`
+
 ### Requirements
 - Unix-like environment
 - Spreadsheet of FTIR-related metadata (with .XLSX extension)

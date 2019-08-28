@@ -5,7 +5,7 @@ __author__ = 'adamkoziol'
 
 setup(
     name="ftir_renamer",
-    version="0.4",
+    version="0.5",
     packages=find_packages(),
     scripts=[os.path.join('ftir', 'renamer.py'),
              os.path.join('ftir', 'ftir_rename')],
@@ -16,6 +16,7 @@ setup(
     description='File renamer for FTIR files',
     url='https://github.com/adamkoziol/ftir_renamer.git',
     long_description=open('README.md').read(),
+    long_description_content_type="text/markdown",
     install_requires=['pandas',
                       'OLCTools',
                       'xlrd'],

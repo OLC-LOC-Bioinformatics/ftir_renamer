@@ -1,5 +1,5 @@
 #!/usr/bin/python3
-from accessoryFunctions.accessoryFunctions import make_path, MetadataObject, SetupLogging
+from olctools.accessoryFunctions.accessoryFunctions import make_path, MetadataObject, SetupLogging
 from argparse import ArgumentParser
 from glob import glob
 import logging
@@ -63,32 +63,26 @@ class Renamer(object):
         logging.info('Renaming files')
         for sample in self.metadata:
             # Use the FTIR id and replicate from the spreadsheet as part of the pattern to match to find the
-            # appropriate files e.g. FTIR0018 replicate 3 will match self.sequencepath/FTIR0018-3*
+            # appropriate files e.g. FTIR0018 replicate 3 will match self.spectra_path/FTIR0018-3*
             try:
-                sample.originalfile = glob(os.path.join(self.sequencepath,
-                                                        ('{}-{}*'.format(sample.ftirid, sample.replicate))))[0]
+                sample.originalfile = glob(os.path.join(self.spectra_path,
+                                                        ('{id}-{replicate}*'
+                                                         .format(id=sample.ftirid,
+                                                                 replicate='{:02d}'.format(int(sample.replicate))))))[0]
                 sample.datetime = os.path.basename(sample.originalfile).split('_')[1]
-                # Rename the file using values from the spreadsheet
+                # # Rename the file using values from the spreadsheet
                 # Original File Name: FTIR0182-1_2017-05-26T11-13-47.spc
-                # New File Name: GN_Klebsiella_BHI_AN_CFIA_FTIR0182_C2_2017_May_26_CA01_OLC0027_2017-05-26T11-13-47.spc
-                sample.renamedfile = '{}'.format('_'.join([sample.gramstain,
-                                                           sample.genus,
-                                                           sample.species,
-                                                           sample.media,
-                                                           sample.respiration,
-                                                           sample.location,
-                                                           sample.ftirid,
-                                                           sample.machine,
-                                                           sample.yyyy,
-                                                           sample.mmm,
-                                                           sample.dd,
-                                                           '{}{:02d}'.format(sample.user, int(sample.replicate)),
-                                                           sample.strainid,
-                                                           sample.datetime
-                                                           ]))
+                # New File Name: Salmonella_Thompson_OLC2596_TSA_FTIR1859_R01.spc
+                sample.renamedfile = '{sn}.spc'\
+                    .format(sn='_'.join([sample.genus,
+                                         sample.species,
+                                         sample.strainid,
+                                         sample.media,
+                                         sample.ftirid,
+                                         'R{:02d}'.format(int(sample.replicate))]))
                 # If the species is not provided, remove the 'nan' placeholder used e.g.
-                # GP_Bacillus_nan_TSB_AE_CFIA_FTIR0010_C2_2017_April_20_01.spc becomes
-                # GP_Bacillus_TSB_AE_CFIA_FTIR0010_C2_2017_April_20_01.spc
+                # Enterobacter_nan_OLC3318_TSA_FTIR1943_R01
+                # Enterobacter_cloacae_OLC3318_TSA_FTIR1943_R01
                 if sample.species == 'nan':
                     sample.renamedfile = sample.renamedfile.replace('nan_', '')
                 # The output file will be the the renamed file in the output path
@@ -106,10 +100,23 @@ class Renamer(object):
         """
         SetupLogging()
         # Define variables based on supplied arguments
-        self.sequencepath = os.path.join(args.sequencepath)
-        assert os.path.isdir(self.sequencepath), 'Supplied sequence path is not a valid directory {0!r:s}'\
-            .format(self.sequencepath)
-        self.file = os.path.join(args.filename)
+        if args.spectra_path.startswith('~'):
+            self.spectra_path = os.path.abspath(os.path.expanduser(os.path.join(args.spectra_path)))
+        else:
+            self.spectra_path = self.file = os.path.abspath(os.path.join(args.spectra_path))
+        assert os.path.isdir(self.spectra_path), 'Supplied sequence path is not a valid directory {0!r:s}'\
+            .format(self.spectra_path)
+
+        if args.filename.startswith('~'):
+            self.file = os.path.abspath(os.path.expanduser(os.path.join(args.filename)))
+        else:
+            self.file = os.path.abspath(os.path.join(args.filename))
+        # If the path to the file wasn't provided, check the spectra folder
+        if not os.path.isfile(self.file):
+            self.file = os.path.join(self.spectra_path, args.filename)
+        # If the file still can't be found, check the parental folder of the spectra folder
+        if not os.path.isfile(self.file):
+            self.file = os.path.join(os.path.dirname(self.spectra_path), args.filename)
         self.start = args.start
         assert os.path.isfile(self.file), 'Cannot find the supplied Excel file ({0!r:s}) with the file information. ' \
                                           'Please ensure that this file is in the path, and there\'s no spelling ' \
@@ -125,7 +132,7 @@ class Renamer(object):
 if __name__ == '__main__':
     # Parser for arguments
     parser = ArgumentParser(description='Rename files for FTIR experiments using strict naming scheme')
-    parser.add_argument('-s', '--sequencepath',
+    parser.add_argument('-s', '--spectra_path',
                         required=True,
                         help='Path of .spc files')
     parser.add_argument('-f', '--filename',
