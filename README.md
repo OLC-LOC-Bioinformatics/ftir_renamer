@@ -41,7 +41,8 @@ Shell script automating the renaming of files from a USB stick
 
 ```
 -f
-The absolute path to the folder containing the .spc files
+The absolute path to the folder containing the .spc files. Note that either this folder or its parent must contain an Excel file named FTIR.XLSX 
+that contains all the required metadata for renaming.
 ```
 
 ### Running
