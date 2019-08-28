@@ -4,6 +4,19 @@ FTIR File Renamer
 
 Renames files from the FTIR based on strict naming scheme
 
+### Virtual Environment
+
+Activate your FTIR renamer virtual environment
+
+`source ftir_rename/bin/activate`
+
+If that does not work, your environment may not exist. Create it as follows:
+
+```
+python3 -m venv ftir_rename
+source ftir_rename/bin/activate
+```
+
 ### Installation
 
 From the command line in the folder in which you would like to install the program:
@@ -61,13 +74,13 @@ The absolute path of the folder to store the renamed files
 ##### Usage
 
 ```
-usage: renamer.py [-h] -s SEQUENCEPATH -f FILENAME -o OUTPUTPATH
+usage: renamer.py [-h] -s SPECTRA_PATH -f FILENAME -o OUTPUTPATH
 
 Rename files for FTIR experiments using strict naming scheme
 
   -h, --help            show this help message and exit
 required arguments:
-  -s SEQUENCEPATH, --sequencepath SEQUENCEPATH
+  -s SPECTRA_PATH, --sequencepath SPECTRA_PATH
                         Path of .spc files to process.
   -f FILENAME, --filename FILENAME
                         Name of .xls(x) file with renaming information. Must
