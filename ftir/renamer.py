@@ -66,9 +66,7 @@ class Renamer(object):
             # appropriate files e.g. FTIR0018 replicate 3 will match self.spectra_path/FTIR0018-3*
             try:
                 sample.originalfile = glob(os.path.join(self.spectra_path,
-                                                        ('{id}-{replicate}*'
-                                                         .format(id=sample.ftirid,
-                                                                 replicate='{:02d}'.format(int(sample.replicate))))))[0]
+                                                        ('{}-{}*'.format(sample.ftirid, sample.replicate))))[0]
                 sample.datetime = os.path.basename(sample.originalfile).split('_')[1]
                 # # Rename the file using values from the spreadsheet
                 # Original File Name: FTIR0182-1_2017-05-26T11-13-47.spc
