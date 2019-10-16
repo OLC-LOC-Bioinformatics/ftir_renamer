@@ -36,10 +36,6 @@ esac
 done
 set -- "${POSITIONAL[@]}" # restore positional parameters
 
-echo renamer.py -s /mnt/nas2/raw_sequence_data/ftir/working_dir -f /mnt/nas2/raw_sequence_data/ftir/working_dir/FTIR.XLSX -o /mnt/nas2/raw_sequence_data/ftir/working_dir/renamedfiles "${CLASSIC}"
-
-exit
-
 # Check to see if the filepath argument was provided
 if [ -z "${FILEPATH}" ]
 then
