@@ -66,18 +66,39 @@ class Renamer(object):
             # appropriate files e.g. FTIR0018 replicate 3 will match self.spectra_path/FTIR0018-3*
             try:
                 sample.originalfile = glob(os.path.join(self.spectra_path,
-                                                        ('{}-{}*'.format(sample.ftirid, sample.replicate))))[0]
+                                                        ('{id}-{rep}*'.format(id=sample.ftirid,
+                                                                              rep=sample.replicate))))[0]
                 sample.datetime = os.path.basename(sample.originalfile).split('_')[1]
-                # # Rename the file using values from the spreadsheet
-                # Original File Name: FTIR0182-1_2017-05-26T11-13-47.spc
-                # New File Name: Salmonella_Thompson_OLC2596_TSA_FTIR1859_R01.spc
-                sample.renamedfile = '{sn}.spc'\
-                    .format(sn='_'.join([sample.genus,
-                                         sample.species,
-                                         sample.strainid,
-                                         sample.media,
-                                         sample.ftirid,
-                                         'R{:02d}'.format(int(sample.replicate))]))
+                # Rename the file using values from the spreadsheet
+                if self.classic:
+                    # Original File Name: FTIR0182-1_2017-05-26T11-13-47.spc
+                    # New File Name:
+                    # GN_Klebsiella_BHI_AN_CFIA_FTIR0182_C2_2017_May_26_CA01_OLC0027_2017-05-26T11-13-47.spc
+                    sample.renamedfile = '{}'.format('_'.join([sample.gramstain,
+                                                               sample.genus,
+                                                               sample.species,
+                                                               sample.media,
+                                                               sample.respiration,
+                                                               sample.location,
+                                                               sample.ftirid,
+                                                               sample.machine,
+                                                               sample.yyyy,
+                                                               sample.mmm,
+                                                               sample.dd,
+                                                               '{}{:02d}'.format(sample.user, int(sample.replicate)),
+                                                               sample.strainid,
+                                                               sample.datetime
+                                                               ]))
+                else:
+                    # Original File Name: FTIR0182-1_2017-05-26T11-13-47.spc
+                    # New File Name: Salmonella_Thompson_OLC2596_TSA_FTIR1859_R01.spc
+                    sample.renamedfile = '{sn}.spc'\
+                        .format(sn='_'.join([sample.genus,
+                                             sample.species,
+                                             sample.strainid,
+                                             sample.media,
+                                             sample.ftirid,
+                                             'R{:02d}'.format(int(sample.replicate))]))
                 # If the species is not provided, remove the 'nan' placeholder used e.g.
                 # Enterobacter_nan_OLC3318_TSA_FTIR1943_R01
                 # Enterobacter_cloacae_OLC3318_TSA_FTIR1943_R01
@@ -92,37 +113,42 @@ class Renamer(object):
             except IndexError:
                 logging.warning('Missing file for {sid}'.format(sid=sample.ftirid))
 
-    def __init__(self, args):
+    def __init__(self, spectra_path, filename, start_time, outputpath, classic):
         """
-        :param args: object of arguments
+        :param spectra_path: Path to .spc files
+        :param filename: Path to .xls(x) file with renaming information.
+        :param start_time: Time the analyses started
+        :param outputpath: Path to folder in which the renamed files are to be stored
+        :param classic: BOOL whether to use the "classic" method of file renaming.
         """
         SetupLogging()
         # Define variables based on supplied arguments
-        if args.spectra_path.startswith('~'):
-            self.spectra_path = os.path.abspath(os.path.expanduser(os.path.join(args.spectra_path)))
+        if spectra_path.startswith('~'):
+            self.spectra_path = os.path.abspath(os.path.expanduser(os.path.join(spectra_path)))
         else:
-            self.spectra_path = self.file = os.path.abspath(os.path.join(args.spectra_path))
+            self.spectra_path = self.file = os.path.abspath(os.path.join(spectra_path))
         assert os.path.isdir(self.spectra_path), 'Supplied sequence path is not a valid directory {0!r:s}'\
             .format(self.spectra_path)
-
-        if args.filename.startswith('~'):
-            self.file = os.path.abspath(os.path.expanduser(os.path.join(args.filename)))
+        if filename.startswith('~'):
+            self.file = os.path.abspath(os.path.expanduser(os.path.join(filename)))
         else:
-            self.file = os.path.abspath(os.path.join(args.filename))
+            self.file = os.path.abspath(os.path.join(filename))
         # If the path to the file wasn't provided, check the spectra folder
         if not os.path.isfile(self.file):
-            self.file = os.path.join(self.spectra_path, args.filename)
+            self.file = os.path.join(self.spectra_path, filename)
         # If the file still can't be found, check the parental folder of the spectra folder
         if not os.path.isfile(self.file):
-            self.file = os.path.join(os.path.dirname(self.spectra_path), args.filename)
-        self.start = args.start
+            self.file = os.path.join(os.path.dirname(self.spectra_path), filename)
+        self.start = start_time
         assert os.path.isfile(self.file), 'Cannot find the supplied Excel file ({0!r:s}) with the file information. ' \
                                           'Please ensure that this file is in the path, and there\'s no spelling ' \
                                           'mistakes'.format(self.file)
         # Set the output path
-        self.outputpath = os.path.join(args.outputpath)
+        self.outputpath = os.path.join(outputpath)
         # Create the output path as required
         make_path(self.outputpath)
+        # Determine the naming scheme
+        self.classic = classic
         # Create class variable
         self.metadata = list()
 
@@ -141,13 +167,22 @@ if __name__ == '__main__':
                         required=True,
                         help='Specify the folder in which the renamed files are to be stored. Provide the '
                              'full path e.g. /path/to/output/files')
+    parser.add_argument('-c', '--classic',
+                        action='store_true',
+                        help='Use the "classic" method of file renaming. '
+                             'Original File Name: FTIR0182-1_2017-05-26T11-13-47.spc, renamed file: '
+                             'GN_Klebsiella_BHI_AN_CFIA_FTIR0182_C2_2017_May_26_CA01_OLC0027_2017-05-26T11-13-47.spc')
     # Get the arguments into an object
     arguments = parser.parse_args()
     # Define the start time
-    arguments.start = time.time()
+    start = time.time()
 
     # Run the script
-    renamer = Renamer(arguments)
+    renamer = Renamer(spectra_path=arguments.spectra_path,
+                      filename=arguments.filename,
+                      start_time=start,
+                      outputpath=arguments.outputpath,
+                      classic=arguments.classic)
     renamer.excelparse()
 
     # Print a bold, blue exit statement

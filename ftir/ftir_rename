@@ -18,8 +18,27 @@ case $key in
     shift # past argument
     ;;
 esac
+
+key="$1"
+
+case $key in
+    -c|--classic)
+    CLASSIC="-c"
+    shift # past argument
+    shift # past value
+    ;;
+    *)    # unknown option
+    POSITIONAL+=("$1") # save it in an array for later
+    shift # past argument
+    ;;
+esac
+
 done
 set -- "${POSITIONAL[@]}" # restore positional parameters
+
+echo renamer.py -s /mnt/nas2/raw_sequence_data/ftir/working_dir -f /mnt/nas2/raw_sequence_data/ftir/working_dir/FTIR.XLSX -o /mnt/nas2/raw_sequence_data/ftir/working_dir/renamedfiles "${CLASSIC}"
+
+exit
 
 # Check to see if the filepath argument was provided
 if [ -z "${FILEPATH}" ]
@@ -68,7 +87,7 @@ sleep 10
 
 # Run Renamer
 echo "Running renamer.py"
-renamer.py -s /mnt/nas2/raw_sequence_data/ftir/working_dir -f /mnt/nas2/raw_sequence_data/ftir/working_dir/FTIR.XLSX -o /mnt/nas2/raw_sequence_data/ftir/working_dir/renamedfiles
+renamer.py -s /mnt/nas2/raw_sequence_data/ftir/working_dir -f /mnt/nas2/raw_sequence_data/ftir/working_dir/FTIR.XLSX -o /mnt/nas2/raw_sequence_data/ftir/working_dir/renamedfiles "${FILEPATH}"
 sleep 5
 
 # Compress Files
