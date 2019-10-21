@@ -12,6 +12,11 @@ __author__ = 'adamkoziol'
 
 class Renamer(object):
 
+    def main(self):
+        self.excelparse()
+        # Run the filer method
+        self.filer()
+
     def excelparse(self):
         """
         Parses input excel file, and creates objects with headers as keys, and cell data as values for each row
@@ -53,8 +58,6 @@ class Renamer(object):
                     setattr(metadata, str(header).replace(' ', '').lower(), value)
             # Append the object to the list of objects
             self.metadata.append(metadata)
-        # Run the filer method
-        self.filer()
 
     def filer(self):
         """
@@ -183,7 +186,7 @@ if __name__ == '__main__':
                       start_time=start,
                       outputpath=arguments.outputpath,
                       classic=arguments.classic)
-    renamer.excelparse()
+    renamer.main()
 
     # Print a bold, blue exit statement
     logging.info('Analyses complete!')

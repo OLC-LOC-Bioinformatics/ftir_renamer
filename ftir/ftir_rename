@@ -83,7 +83,7 @@ sleep 10
 
 # Run Renamer
 echo "Running renamer.py"
-renamer.py -s /mnt/nas2/raw_sequence_data/ftir/working_dir -f /mnt/nas2/raw_sequence_data/ftir/working_dir/FTIR.XLSX -o /mnt/nas2/raw_sequence_data/ftir/working_dir/renamedfiles "${FILEPATH}"
+renamer.py -s /mnt/nas2/raw_sequence_data/ftir/working_dir -f /mnt/nas2/raw_sequence_data/ftir/working_dir/FTIR.XLSX -o /mnt/nas2/raw_sequence_data/ftir/working_dir/renamedfiles "${CLASSIC}"
 sleep 5
 
 # Compress Files
