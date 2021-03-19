@@ -1,37 +1,55 @@
 #!/bin/bash
 
+#Initialise the EXTENSION of the files to be spa (can be changed in case the old format is used)
+EXTENSION="spa"
+SPC=""
 # Parse the positional arguments
 # from Method #1 in https://stackoverflow.com/a/14203146
 POSITIONAL=()
 while [[ $# -gt 0 ]]
-do
-key="$1"
+	do
+		key="$1"
 
-case $key in
-    -f|--filepath)
-    FILEPATH="$2"
-    shift # past argument
-    shift # past value
-    ;;
-    *)    # unknown option
-    POSITIONAL+=("$1") # save it in an array for later
-    shift # past argument
-    ;;
-esac
+		case $key in
+		    -f|--filepath)
+		    FILEPATH="$2"
+		    shift # past argument
+		    shift # past value
+		    ;;
+		    *)    # unknown option
+		    POSITIONAL+=("$1") # save it in an array for later
+		    shift # past argument
+		    ;;
+		esac
 
-key="$1"
+		key="$1"
 
-case $key in
-    -c|--classic)
-    CLASSIC="-c"
-    shift # past argument
-    shift # past value
-    ;;
-    *)    # unknown option
-    POSITIONAL+=("$1") # save it in an array for later
-    shift # past argument
-    ;;
-esac
+		case $key in
+		    -s|--spc)
+		    EXTENSION="spc"
+		    SPC="-s"
+		    shift # past argument
+		    shift # past value
+		    ;;
+		    *)    # unknown option
+		    POSITIONAL+=("$1") # save it in an array for later
+		    shift # past argument
+		    ;;
+		esac
+
+		key="$1"
+
+		case $key in
+		    -c|--classic)
+		    CLASSIC="-c"
+		    shift # past argument
+		    shift # past value
+		    ;;
+		    *)    # unknown option
+		    POSITIONAL+=("$1") # save it in an array for later
+		    shift # past argument
+		    ;;
+		esac
 
 done
 set -- "${POSITIONAL[@]}" # restore positional parameters
@@ -60,11 +78,11 @@ else
               echo "Cannot locate FTIR.XLSX file in "${FILEPATH}" or "${PARENTDIR}"!" 
               exit
           fi
-          # Check to see if .spc files are present in the supplied path
-          SPCFILES=`ls "${FILEPATH}"/*.spc 2> /dev/null`
+          # Check to see if .spa/.spc files are present in the supplied path
+          SPCFILES=`ls "${FILEPATH}"/*."${EXTENSION}" 2> /dev/null`
           if [ -z "${SPCFILES}" ]
           then
-              echo "Cannot locate .spc files in "${FILEPATH}"!" 
+              echo "Cannot locate ."${EXTENSION}" files in "${FILEPATH}"!" 
               exit
           else
               echo "Using FTIR file path: "${FILEPATH}""
@@ -77,18 +95,18 @@ fi
 echo "Copying files from USB to /mnt/nas2/raw_sequence_data/ftir/working_dir"
 # Make the working directory on the NAS (if necessary)
 mkdir -p /mnt/nas2/raw_sequence_data/ftir/working_dir/
-cp -r "${FILEPATH}"/*.spc /mnt/nas2/raw_sequence_data/ftir/working_dir/
+cp -r "${FILEPATH}"/*."${EXTENSION}" /mnt/nas2/raw_sequence_data/ftir/working_dir/
 cp -r "${EXCELFILE}" /mnt/nas2/raw_sequence_data/ftir/working_dir/
 sleep 10
 
 # Run Renamer
 echo "Running renamer.py"
-renamer.py -s /mnt/nas2/raw_sequence_data/ftir/working_dir -f /mnt/nas2/raw_sequence_data/ftir/working_dir/FTIR.XLSX -o /mnt/nas2/raw_sequence_data/ftir/working_dir/renamedfiles "${CLASSIC}"
+renamer.py -s /mnt/nas2/raw_sequence_data/ftir/working_dir -f /mnt/nas2/raw_sequence_data/ftir/working_dir/FTIR.XLSX -o /mnt/nas2/raw_sequence_data/ftir/working_dir/renamedfiles "${CLASSIC}" "${SPC}"
 sleep 5
 
 # Compress Files
 echo "Compressing files"
-zip -j /mnt/nas2/raw_sequence_data/ftir/working_dir/renamedfiles/FTIR.zip /mnt/nas2/raw_sequence_data/ftir/working_dir/renamedfiles/*.spc
+zip -j /mnt/nas2/raw_sequence_data/ftir/working_dir/renamedfiles/FTIR.zip /mnt/nas2/raw_sequence_data/ftir/working_dir/renamedfiles/*."${EXTENSION}"
 sleep 5
 
 # Move Zip to USB
@@ -98,7 +116,7 @@ sleep 2
 
 # Move raw files from working_dir to raw_files
 echo "Moving raw files to storage"
-mv /mnt/nas2/raw_sequence_data/ftir/working_dir/*.spc /mnt/nas2/raw_sequence_data/ftir/raw_files/
+mv /mnt/nas2/raw_sequence_data/ftir/working_dir/*."${EXTENSION}" /mnt/nas2/raw_sequence_data/ftir/raw_files/
 
 # Move renamed files from working_dir/renamed to renamedfiles
 echo "Moving renamed files to storage"
@@ -110,6 +128,6 @@ rm /mnt/nas2/raw_sequence_data/ftir/working_dir/FTIR.XLSX
 
 # Delete original files from USB
 echo "Removing original files from USB"
-rm "${FILEPATH}"/*.spc
+rm "${FILEPATH}"/*."${EXTENSION}"
 
 echo "Complete!"

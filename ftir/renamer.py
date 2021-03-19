@@ -74,9 +74,9 @@ class Renamer(object):
                 sample.datetime = os.path.basename(sample.originalfile).split('_')[1]
                 # Rename the file using values from the spreadsheet
                 if self.classic:
-                    # Original File Name: FTIR0182-1_2017-05-26T11-13-47.spc
+                    # Original File Name: FTIR0182-1_2017-05-26T11-13-47.spa
                     # New File Name:
-                    # GN_Klebsiella_BHI_AN_CFIA_FTIR0182_C2_2017_May_26_CA01_OLC0027_2017-05-26T11-13-47.spc
+                    # GN_Klebsiella_BHI_AN_CFIA_FTIR0182_C2_2017_May_26_CA01_OLC0027_2017-05-26T11-13-47.spa
                     sample.renamedfile = '{}'.format('_'.join([sample.gramstain,
                                                                sample.genus,
                                                                sample.species,
@@ -93,15 +93,16 @@ class Renamer(object):
                                                                sample.datetime
                                                                ]))
                 else:
-                    # Original File Name: FTIR0182-1_2017-05-26T11-13-47.spc
-                    # New File Name: Salmonella_Thompson_OLC2596_TSA_FTIR1859_R01.spc
-                    sample.renamedfile = '{sn}.spc'\
+                    # Original File Name: FTIR0182-1_2017-05-26T11-13-47.spa
+                    # New File Name: Salmonella_Thompson_OLC2596_TSA_FTIR1859_R01.spa
+                    sample.renamedfile = '{sn}.{ext}'\
                         .format(sn='_'.join([sample.genus,
                                              sample.species,
                                              sample.strainid,
                                              sample.media,
                                              sample.ftirid,
-                                             'R{:02d}'.format(int(sample.replicate))]))
+                                             'R{:02d}'.format(int(sample.replicate))]),
+                                ext=self.extension)
                 # If the species is not provided, remove the 'nan' placeholder used e.g.
                 # Enterobacter_nan_OLC3318_TSA_FTIR1943_R01
                 # Enterobacter_cloacae_OLC3318_TSA_FTIR1943_R01
@@ -116,13 +117,14 @@ class Renamer(object):
             except IndexError:
                 logging.warning('Missing file for {sid}'.format(sid=sample.ftirid))
 
-    def __init__(self, spectra_path, filename, start_time, outputpath, classic):
+    def __init__(self, spectra_path, filename, start_time, outputpath, classic, extension):
         """
-        :param spectra_path: Path to .spc files
+        :param spectra_path: Path to .spa/.spc files
         :param filename: Path to .xls(x) file with renaming information.
         :param start_time: Time the analyses started
         :param outputpath: Path to folder in which the renamed files are to be stored
         :param classic: BOOL whether to use the "classic" method of file renaming.
+        :param extension: BOOL whether the file extension is .spc
         """
         SetupLogging()
         # Define variables based on supplied arguments
@@ -152,6 +154,7 @@ class Renamer(object):
         make_path(self.outputpath)
         # Determine the naming scheme
         self.classic = classic
+        self.extension = 'spa' if not extension else 'spc'
         # Create class variable
         self.metadata = list()
 
@@ -161,7 +164,7 @@ if __name__ == '__main__':
     parser = ArgumentParser(description='Rename files for FTIR experiments using strict naming scheme')
     parser.add_argument('-s', '--spectra_path',
                         required=True,
-                        help='Path of .spc files')
+                        help='Path of .spa/.spc files')
     parser.add_argument('-f', '--filename',
                         required=True,
                         help='Absolute path to .xls(x) file with renaming information. Must conform to required format '
@@ -173,8 +176,12 @@ if __name__ == '__main__':
     parser.add_argument('-c', '--classic',
                         action='store_true',
                         help='Use the "classic" method of file renaming. '
-                             'Original File Name: FTIR0182-1_2017-05-26T11-13-47.spc, renamed file: '
-                             'GN_Klebsiella_BHI_AN_CFIA_FTIR0182_C2_2017_May_26_CA01_OLC0027_2017-05-26T11-13-47.spc')
+                             'Original File Name: FTIR0182-1_2017-05-26T11-13-47.spa, renamed file: '
+                             'GN_Klebsiella_BHI_AN_CFIA_FTIR0182_C2_2017_May_26_CA01_OLC0027_2017-05-26T11-13-47.spa')
+    parser.add_argument('-s', '--spc',
+                        action='store_true',
+                        help='The version of the FTIR uses a .spa file extension instead of .spc. Add this flag if '
+                             'you are working with .spc files')
     # Get the arguments into an object
     arguments = parser.parse_args()
     # Define the start time
@@ -185,7 +192,8 @@ if __name__ == '__main__':
                       filename=arguments.filename,
                       start_time=start,
                       outputpath=arguments.outputpath,
-                      classic=arguments.classic)
+                      classic=arguments.classic,
+                      extension=arguments.spc)
     renamer.main()
 
     # Print a bold, blue exit statement
