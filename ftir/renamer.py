@@ -162,7 +162,7 @@ class Renamer(object):
 if __name__ == '__main__':
     # Parser for arguments
     parser = ArgumentParser(description='Rename files for FTIR experiments using strict naming scheme')
-    parser.add_argument('-s', '--spectra_path',
+    parser.add_argument('-p', '--spectra_path',
                         required=True,
                         help='Path of .spa/.spc files')
     parser.add_argument('-f', '--filename',
