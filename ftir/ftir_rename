@@ -3,55 +3,34 @@
 #Initialise the EXTENSION of the files to be spa (can be changed in case the old format is used)
 EXTENSION="spa"
 SPC=""
-# Parse the positional arguments
-# from Method #1 in https://stackoverflow.com/a/14203146
-POSITIONAL=()
-while [[ $# -gt 0 ]]
-	do
-		key="$1"
-
-		case $key in
-		    -f|--filepath)
-		    FILEPATH="$2"
-		    shift # past argument
-		    shift # past value
+# Parse the arguments
+# I'm changing this since the old argument grabber wasn't working
+# and this is easier than debugging it.
+while getopts 'f:sch' flag; do
+	case $flag in
+		f)
+		    FILEPATH=$OPTARG
 		    ;;
-		    *)    # unknown option
-		    POSITIONAL+=("$1") # save it in an array for later
-		    shift # past argument
-		    ;;
-		esac
-
-		key="$1"
-
-		case $key in
-		    -s|--spc)
+		s)
 		    EXTENSION="spc"
 		    SPC="-s"
-		    shift # past argument
-		    shift # past value
 		    ;;
-		    *)    # unknown option
-		    POSITIONAL+=("$1") # save it in an array for later
-		    shift # past argument
-		    ;;
-		esac
-
-		key="$1"
-
-		case $key in
-		    -c|--classic)
+		c)
 		    CLASSIC="-c"
-		    shift # past argument
-		    shift # past value
 		    ;;
-		    *)    # unknown option
-		    POSITIONAL+=("$1") # save it in an array for later
-		    shift # past argument
-		    ;;
-		esac
-
+		h)
+		    help=1
+	esac
 done
+
+if [ -n "$help" ]; then
+	echo "Usage: $0 -f path_to_ftir_files"
+	echo "Optional: add -s if the file extension is spc instead of spa"
+	echo "Optional: add -c to do the classic renaming instead of the newer default"
+	echo "Optional: add -h to print this help statement instead of renaming anything"
+	exit
+fi
+
 set -- "${POSITIONAL[@]}" # restore positional parameters
 
 # Check to see if the filepath argument was provided
@@ -101,7 +80,7 @@ sleep 10
 
 # Run Renamer
 echo "Running renamer.py"
-renamer.py -s /mnt/nas2/raw_sequence_data/ftir/working_dir -f /mnt/nas2/raw_sequence_data/ftir/working_dir/FTIR.XLSX -o /mnt/nas2/raw_sequence_data/ftir/working_dir/renamedfiles "${CLASSIC}" "${SPC}"
+renamer.py -p /mnt/nas2/raw_sequence_data/ftir/working_dir -f /mnt/nas2/raw_sequence_data/ftir/working_dir/FTIR.XLSX -o /mnt/nas2/raw_sequence_data/ftir/working_dir/renamedfiles "${CLASSIC}" "${SPC}"
 sleep 5
 
 # Compress Files
