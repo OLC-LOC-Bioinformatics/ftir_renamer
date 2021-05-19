@@ -13,7 +13,7 @@ while getopts 'f:sch' flag; do
 		    ;;
 		s)
 		    EXTENSION="spc"
-		    SPC="-s"
+		    SPC="-e spc"
 		    ;;
 		c)
 		    CLASSIC="-c"

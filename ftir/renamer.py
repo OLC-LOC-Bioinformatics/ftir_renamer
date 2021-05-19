@@ -64,20 +64,21 @@ class Renamer(object):
         Match the files to the spreadsheet. Rename and copy the files as required.
         """
         logging.info('Renaming files')
-        for sample in self.metadata:
-            # Use the FTIR id and replicate from the spreadsheet as part of the pattern to match to find the
-            # appropriate files e.g. FTIR0018 replicate 3 will match self.spectra_path/FTIR0018-3*
-            try:
-                sample.originalfile = glob(os.path.join(self.spectra_path,
-                                                        ('{id}-{rep}*'.format(id=sample.ftirid,
-                                                                              rep=sample.replicate))))[0]
-                sample.datetime = os.path.basename(sample.originalfile).split('_')[1]
-                # Rename the file using values from the spreadsheet
-                if self.classic:
-                    # Original File Name: FTIR0182-1_2017-05-26T11-13-47.spa
-                    # New File Name:
-                    # GN_Klebsiella_BHI_AN_CFIA_FTIR0182_C2_2017_May_26_CA01_OLC0027_2017-05-26T11-13-47.spa
-                    sample.renamedfile = '{}'.format('_'.join([sample.gramstain,
+        for extension in self.extensions:
+             for sample in self.metadata:
+                 # Use the FTIR id and replicate from the spreadsheet as part of the pattern to match to find the
+                 # appropriate files e.g. FTIR0018 replicate 3 will match self.spectra_path/FTIR0018-3*
+                 try:
+                     sample.originalfile = glob(os.path.join(self.spectra_path,
+                                                        ('{id}-{rep}*{ext}'.format(id=sample.ftirid,
+                                                                              rep=sample.replicate, ext=extension))))[0]
+                     # Rename the file using values from the spreadsheet
+                     if self.classic:
+                         sample.datetime = os.path.basename(sample.originalfile).split('_')[1] 
+                         # Original File Name: FTIR0182-1_2017-05-26T11-13-47.spa
+                         # New File Name:
+                         # GN_Klebsiella_BHI_AN_CFIA_FTIR0182_C2_2017_May_26_CA01_OLC0027_2017-05-26T11-13-47.spa
+                         sample.renamedfile = '{}'.format('_'.join([sample.gramstain,
                                                                sample.genus,
                                                                sample.species,
                                                                sample.media,
@@ -92,32 +93,32 @@ class Renamer(object):
                                                                sample.strainid,
                                                                sample.datetime
                                                                ]))
-                else:
-                    # Original File Name: FTIR0182-1_2017-05-26T11-13-47.spa
-                    # New File Name: Salmonella_Thompson_OLC2596_TSA_FTIR1859_R01.spa
-                    sample.renamedfile = '{sn}.{ext}'\
-                        .format(sn='_'.join([sample.genus,
+                     else:
+                         # Original File Name: FTIR0182-1_2017-05-26T11-13-47.spa
+                         # New File Name: Salmonella_Thompson_OLC2596_TSA_FTIR1859_R01.spa
+                         sample.renamedfile = '{sn}.{ext}'\
+                             .format(sn='_'.join([sample.genus,
                                              sample.species,
                                              sample.strainid,
                                              sample.media,
                                              sample.ftirid,
                                              'R{:02d}'.format(int(sample.replicate))]),
-                                ext=self.extension)
-                # If the species is not provided, remove the 'nan' placeholder used e.g.
-                # Enterobacter_nan_OLC3318_TSA_FTIR1943_R01
-                # Enterobacter_cloacae_OLC3318_TSA_FTIR1943_R01
-                if sample.species == 'nan':
-                    sample.renamedfile = sample.renamedfile.replace('nan_', '')
-                # The output file will be the the renamed file in the output path
-                sample.outputfile = os.path.join(self.outputpath, sample.renamedfile)
-                # Do not copy the file if it already exists
-                if not os.path.isfile(sample.outputfile):
-                    shutil.copyfile(sample.originalfile, sample.outputfile)
-            # Print a message warning that certain files specified in the spreadsheet were not found in the file path
-            except IndexError:
-                logging.warning('Missing file for {sid}'.format(sid=sample.ftirid))
+                                   ext=extension)
+                     # If the species is not provided, remove the 'nan' placeholder used e.g.
+                     # Enterobacter_nan_OLC3318_TSA_FTIR1943_R01
+                     # Enterobacter_cloacae_OLC3318_TSA_FTIR1943_R01
+                     if sample.species == 'nan':
+                         sample.renamedfile = sample.renamedfile.replace('nan_', '')
+                     # The output file will be the the renamed file in the output path
+                     sample.outputfile = os.path.join(self.outputpath, sample.renamedfile)
+                     # Do not copy the file if it already exists
+                     if not os.path.isfile(sample.outputfile):
+                         shutil.copyfile(sample.originalfile, sample.outputfile)
+                 # Print a message warning that certain files specified in the spreadsheet were not found in the file path
+                 except IndexError:
+                     logging.warning('Missing file for {sid}'.format(sid=sample.ftirid))
 
-    def __init__(self, spectra_path, filename, start_time, outputpath, classic, extension):
+    def __init__(self, spectra_path, filename, start_time, outputpath, classic, extensions):
         """
         :param spectra_path: Path to .spa/.spc files
         :param filename: Path to .xls(x) file with renaming information.
@@ -154,7 +155,8 @@ class Renamer(object):
         make_path(self.outputpath)
         # Determine the naming scheme
         self.classic = classic
-        self.extension = 'spa' if not extension else 'spc'
+        # Variable for extensions of files to rename
+        self.extensions = extensions
         # Create class variable
         self.metadata = list()
 
@@ -178,22 +180,22 @@ if __name__ == '__main__':
                         help='Use the "classic" method of file renaming. '
                              'Original File Name: FTIR0182-1_2017-05-26T11-13-47.spa, renamed file: '
                              'GN_Klebsiella_BHI_AN_CFIA_FTIR0182_C2_2017_May_26_CA01_OLC0027_2017-05-26T11-13-47.spa')
-    parser.add_argument('-s', '--spc',
-                        action='store_true',
-                        help='The version of the FTIR uses a .spa file extension instead of .spc. Add this flag if '
-                             'you are working with .spc files')
+    parser.add_argument('-e', '--extensions',
+                        nargs="+",
+                        help='File extensions for files to rename.')
     # Get the arguments into an object
     arguments = parser.parse_args()
     # Define the start time
     start = time.time()
-
+    if not arguments.extensions:
+        arguments.extensions = ["spa"]
     # Run the script
     renamer = Renamer(spectra_path=arguments.spectra_path,
                       filename=arguments.filename,
                       start_time=start,
                       outputpath=arguments.outputpath,
                       classic=arguments.classic,
-                      extension=arguments.spc)
+                      extensions=arguments.extensions)
     renamer.main()
 
     # Print a bold, blue exit statement
