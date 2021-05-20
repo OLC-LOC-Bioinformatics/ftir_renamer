@@ -115,11 +115,11 @@ mv $rawfiles /mnt/nas2/raw_sequence_data/ftir/raw_files/
 echo "Moving renamed files to storage"
 mv $renamedfiles /mnt/nas2/raw_sequence_data/ftir/renamedfiles/
 
-Delete Old FTIR
+# Delete Old FTIR
 echo "Removing FTIR.XLSX from NAS"
 rm $wdir/FTIR.XLSX
 
-Delete original files from USB
+# Delete original files from USB
 echo "Removing original files from USB"
 for EXTENSION in $EXTENSIONS; do
     rm "${FILEPATH}"/*."${EXTENSION}"
