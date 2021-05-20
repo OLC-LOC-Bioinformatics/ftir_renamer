@@ -1,22 +1,22 @@
 #!/bin/bash
 
 #Initialise the EXTENSION of the files to be spa (can be changed in case the old format is used)
-EXTENSION="spa"
+EXTENSIONS=""
 SPC=""
+wdir="/mnt/nas2/raw_sequence_data/ftir/working_dir"
 # Parse the arguments
 # I'm changing this since the old argument grabber wasn't working
 # and this is easier than debugging it.
-while getopts 'f:sch' flag; do
+while getopts 'f:e:ch' flag; do
 	case $flag in
 		f)
 		    FILEPATH=$OPTARG
 		    ;;
-		s)
-		    EXTENSION="spc"
-		    SPC="-e spc"
+		e)
+		    EXTENSIONS="$EXTENSIONS $OPTARG"
 		    ;;
 		c)
-		    CLASSIC="-c"
+		    CLASSIC="-c "
 		    ;;
 		h)
 		    help=1
@@ -25,13 +25,17 @@ done
 
 if [ -n "$help" ]; then
 	echo "Usage: $0 -f path_to_ftir_files"
-	echo "Optional: add -s if the file extension is spc instead of spa"
 	echo "Optional: add -c to do the classic renaming instead of the newer default"
 	echo "Optional: add -h to print this help statement instead of renaming anything"
+	echo "Optional: add -e to specify a file extension. Default is .spa"
+	echo "The -e option may be used multiple times to change file names for more than one extension"
 	exit
 fi
 
-set -- "${POSITIONAL[@]}" # restore positional parameters
+# if no extensions were provided, use spa
+if [ -z "${EXTENSIONS}" ]; then
+	EXTENSIONS=" spa"
+fi
 
 # Check to see if the filepath argument was provided
 if [ -z "${FILEPATH}" ]
@@ -41,7 +45,6 @@ then
 else
       # Ensure that the filepath is valid
       PARENTDIR="$(dirname "${FILEPATH}")"
-	echo "${PARENTDIR}"
       if [ ! -d "${FILEPATH}" ] 
       then
           echo "Directory "${FILEPATH}" DOES NOT exist!" 
@@ -58,10 +61,12 @@ else
               exit
           fi
           # Check to see if .spa/.spc files are present in the supplied path
-          SPCFILES=`ls "${FILEPATH}"/*."${EXTENSION}" 2> /dev/null`
-          if [ -z "${SPCFILES}" ]
+	  for EXTENSION in $EXTENSIONS; do
+		  SPCFILES="$SPCFILES $(ls "${FILEPATH}"/*."${EXTENSION}")"
+          done
+          if [ -z "${SPCFILES/ }" ]
           then
-              echo "Cannot locate ."${EXTENSION}" files in "${FILEPATH}"!" 
+		  echo "Cannot locate .$(echo $EXTENSIONS | sed 's/\s/ or ./g') files in "${FILEPATH}"!" 
               exit
           else
               echo "Using FTIR file path: "${FILEPATH}""
@@ -71,42 +76,53 @@ else
 fi
 
 # Copy Files USB to /mnt/nas2/raw_sequence_data/ftir
-echo "Copying files from USB to /mnt/nas2/raw_sequence_data/ftir/working_dir"
+echo "Copying files from USB to $wdir/"
 # Make the working directory on the NAS (if necessary)
-mkdir -p /mnt/nas2/raw_sequence_data/ftir/working_dir/
-cp -r "${FILEPATH}"/*."${EXTENSION}" /mnt/nas2/raw_sequence_data/ftir/working_dir/
-cp -r "${EXCELFILE}" /mnt/nas2/raw_sequence_data/ftir/working_dir/
+mkdir -p $wdir
+for EXTENSION in $EXTENSIONS; do
+    cp -r "${FILEPATH}"/*."${EXTENSION}" $wdir
+done
+cp -r "${EXCELFILE}" $wdir
 sleep 10
 
 # Run Renamer
 echo "Running renamer.py"
-renamer.py -p /mnt/nas2/raw_sequence_data/ftir/working_dir -f /mnt/nas2/raw_sequence_data/ftir/working_dir/FTIR.XLSX -o /mnt/nas2/raw_sequence_data/ftir/working_dir/renamedfiles "${CLASSIC}" "${SPC}"
+#hacky way of checking path
+python $(echo $0 | sed 's/ftir_rename$//')renamer.py -p $wdir -f $wdir/FTIR.XLSX -o $wdir/renamedfiles "${CLASSIC}"-e"${EXTENSIONS}"
 sleep 5
 
 # Compress Files
 echo "Compressing files"
-zip -j /mnt/nas2/raw_sequence_data/ftir/working_dir/renamedfiles/FTIR.zip /mnt/nas2/raw_sequence_data/ftir/working_dir/renamedfiles/*."${EXTENSION}"
+for EXTENSION in $EXTENSIONS; do
+	renamedfiles="$renamedfiles $(ls $wdir/renamedfiles/*.${EXTENSION})"
+	rawfiles="$rawfiles $(ls $wdir/*.${EXTENSION})"
+done
+
+echo $rawfiles
+zip -j $wdir/renamedfiles/FTIR.zip $renamedfiles
 sleep 5
 
 # Move Zip to USB
 echo "Moving archive to USB"
-mv /mnt/nas2/raw_sequence_data/ftir/working_dir/renamedfiles/FTIR.zip "$(dirname "${FILEPATH}")"
+mv $wdir/renamedfiles/FTIR.zip "$(dirname "${FILEPATH}")"
 sleep 2
 
 # Move raw files from working_dir to raw_files
 echo "Moving raw files to storage"
-mv /mnt/nas2/raw_sequence_data/ftir/working_dir/*."${EXTENSION}" /mnt/nas2/raw_sequence_data/ftir/raw_files/
+mv $rawfiles /mnt/nas2/raw_sequence_data/ftir/raw_files/
 
 # Move renamed files from working_dir/renamed to renamedfiles
 echo "Moving renamed files to storage"
-mv /mnt/nas2/raw_sequence_data/ftir/working_dir/renamedfiles/* /mnt/nas2/raw_sequence_data/ftir/renamedfiles/
+mv $renamedfiles /mnt/nas2/raw_sequence_data/ftir/renamedfiles/
 
-#Delete Old FTIR
+Delete Old FTIR
 echo "Removing FTIR.XLSX from NAS"
-rm /mnt/nas2/raw_sequence_data/ftir/working_dir/FTIR.XLSX
+rm $wdir/FTIR.XLSX
 
-# Delete original files from USB
+Delete original files from USB
 echo "Removing original files from USB"
-rm "${FILEPATH}"/*."${EXTENSION}"
+for EXTENSION in $EXTENSIONS; do
+    rm "${FILEPATH}"/*."${EXTENSION}"
+done
 
 echo "Complete!"

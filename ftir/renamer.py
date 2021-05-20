@@ -189,6 +189,9 @@ if __name__ == '__main__':
     start = time.time()
     if not arguments.extensions:
         arguments.extensions = ["spa"]
+    else:
+        # I don't know why argparse handles spaces automatically sometimes but not always -_-
+        arguments.extensions = " ".join(arguments.extensions).split()
     # Run the script
     renamer = Renamer(spectra_path=arguments.spectra_path,
                       filename=arguments.filename,
