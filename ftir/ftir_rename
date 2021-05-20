@@ -104,7 +104,7 @@ sleep 5
 
 # Move Zip to USB
 echo "Moving archive to USB"
-mv $wdir/renamedfiles/FTIR.zip "$(dirname "${FILEPATH}")"
+mv $wdir/renamedfiles/FTIR.zip "${FILEPATH}"
 sleep 2
 
 # Move raw files from working_dir to raw_files
